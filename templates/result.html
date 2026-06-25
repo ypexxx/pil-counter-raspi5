@@ -1,0 +1,577 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistem Penghitung Obat - Hasil</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 25px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            max-width: 800px;
+            width: 100%;
+            animation: fadeIn 0.5s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes countUp {
+            0% { transform: scale(0.5); opacity: 0; }
+            50% { transform: scale(1.2); }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        @keyframes popIn {
+            0% { transform: scale(0.8); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        .count-animate {
+            animation: countUp 0.5s ease;
+        }
+
+        /* Header */
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .header-icon {
+            font-size: 50px;
+            margin-bottom: 10px;
+        }
+
+        .header h1 {
+            font-size: 28px;
+            color: #333;
+            margin-bottom: 5px;
+        }
+
+        .header p {
+            color: #666;
+            font-size: 14px;
+        }
+
+        /* Status Bar */
+        .status-bar {
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 15px 20px;
+            margin-bottom: 25px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .status-indicator {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .status-dot {
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+            background: #28a745;
+        }
+
+        .status-text {
+            font-weight: 600;
+            color: #333;
+            font-size: 16px;
+        }
+
+        .status-time {
+            color: #999;
+            font-size: 13px;
+        }
+
+        /* Display Card - Count */
+        .display-card {
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            border-radius: 20px;
+            padding: 40px;
+            text-align: center;
+            margin-bottom: 25px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .display-card::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(102, 126, 234, 0.05) 0%, transparent 70%);
+            animation: rotate 20s linear infinite;
+        }
+
+        @keyframes rotate {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .count-number {
+            font-size: 100px;
+            font-weight: 800;
+            color: #667eea;
+            line-height: 1;
+            position: relative;
+            z-index: 1;
+        }
+
+        .count-label {
+            font-size: 18px;
+            color: #666;
+            margin-top: 10px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .count-detail {
+            font-size: 14px;
+            color: #999;
+            margin-top: 5px;
+            position: relative;
+            z-index: 1;
+        }
+
+        /* Details Grid */
+        .details-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+
+        .detail-item {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 12px;
+            text-align: center;
+        }
+
+        .detail-item .label {
+            font-size: 12px;
+            color: #999;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .detail-item .value {
+            font-size: 20px;
+            font-weight: 700;
+            color: #333;
+            margin-top: 5px;
+        }
+
+        .detail-item .value.success { color: #28a745; }
+        .detail-item .value.primary { color: #667eea; }
+
+        /* Buttons */
+        .button-group {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            flex: 1;
+            padding: 15px 25px;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            min-width: 140px;
+            text-decoration: none;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.5);
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #5a6268;
+            transform: translateY(-2px);
+        }
+
+        .btn-success {
+            background: #28a745;
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #218838;
+            transform: translateY(-2px);
+        }
+
+        .btn-info {
+            background: #17a2b8;
+            color: white;
+        }
+
+        .btn-info:hover {
+            background: #138496;
+            transform: translateY(-2px);
+        }
+
+        /* Modal / Popup */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 9999;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            max-width: 90%;
+            max-height: 90vh;
+            position: relative;
+            animation: popIn 0.3s ease;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #f0f0f0;
+        }
+
+        .modal-header h2 {
+            font-size: 20px;
+            color: #333;
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 30px;
+            cursor: pointer;
+            color: #999;
+            transition: all 0.3s ease;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-close:hover {
+            background: #f0f0f0;
+            color: #333;
+        }
+
+        .modal-body {
+            text-align: center;
+        }
+
+        .modal-body img {
+            max-width: 100%;
+            max-height: 70vh;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            object-fit: contain;
+        }
+
+        .modal-body .no-image {
+            color: #999;
+            padding: 60px 20px;
+        }
+
+        .modal-body .no-image i {
+            font-size: 60px;
+            display: block;
+            margin-bottom: 15px;
+            color: #ddd;
+        }
+
+        @media (max-width: 600px) {
+            .container { padding: 20px; }
+            .header h1 { font-size: 22px; }
+            .count-number { font-size: 60px; }
+            .btn { font-size: 14px; padding: 12px 18px; min-width: 100px; }
+            .details-grid { grid-template-columns: repeat(2, 1fr); }
+            .modal-content { padding: 20px; max-width: 95%; }
+            .modal-body img { max-height: 50vh; }
+        }
+    </style>
+</head>
+<body>
+    <!-- Modal Popup untuk Gambar Hasil -->
+    <div class="modal-overlay" id="imageModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>🎯 Hasil Deteksi YOLOv8</h2>
+                <button class="modal-close" onclick="closeModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div id="modalImageContainer">
+                    <img id="modalImage" src="" alt="Hasil Deteksi">
+                    <div class="no-image" id="modalNoImage" style="display: none;">
+                        <i>🖼️</i>
+                        <p>Gambar hasil tidak ditemukan</p>
+                        <p style="font-size: 14px; color: #bbb; margin-top: 5px;">Silakan lakukan deteksi terlebih dahulu</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <div class="header-icon">🎯</div>
+            <h1>Hasil Deteksi</h1>
+            <p>Penghitungan obat selesai dilakukan</p>
+        </div>
+
+        <!-- Status Bar -->
+        <div class="status-bar">
+            <div class="status-indicator">
+                <div class="status-dot"></div>
+                <span class="status-text" id="statusText">Selesai</span>
+            </div>
+            <span class="status-time" id="statusTime">-</span>
+        </div>
+
+        <!-- Display Card - Count -->
+        <div class="display-card">
+            <div class="count-number count-animate" id="countDisplay">0</div>
+            <div class="count-label">Jumlah Obat Terdeteksi</div>
+            <div class="count-detail" id="countDetail">✨ Deteksi selesai</div>
+        </div>
+
+        <!-- Details Grid -->
+        <div class="details-grid">
+            <div class="detail-item">
+                <div class="label">Status</div>
+                <div class="value success" id="statusValue">Selesai</div>
+            </div>
+            <div class="detail-item">
+                <div class="label">Waktu Proses</div>
+                <div class="value primary" id="processTime">-</div>
+            </div>
+            <div class="detail-item">
+                <div class="label">Waktu Deteksi</div>
+                <div class="value" id="detectionTime">-</div>
+            </div>
+            <div class="detail-item">
+                <div class="label">Hasil</div>
+                <div class="value success" id="resultStatus">✅ Berhasil</div>
+            </div>
+        </div>
+
+        <!-- Buttons -->
+        <div class="button-group">
+            <button class="btn btn-info" onclick="openModal()">
+                🖼️ Lihat Gambar
+            </button>
+            <a href="{{ url_for('index') }}" class="btn btn-secondary">
+                🏠 Kembali ke Home
+            </a>
+        </div>
+    </div>
+
+    <script>
+        function checkStatusAndRedirect() {
+            fetch('/api/status')
+            .then(res => res.json())
+            .then(data => {
+                if (data.status === 'idle') {
+                    // Redirect ke home setelah 3 detik
+                    setTimeout(() => {
+                        window.location.href = '/';
+                    }, 3000);
+                    showToast('⏳ Sistem idle, kembali ke home...', 3000);
+                }
+        });
+}
+
+        // =============================================
+        // LOAD RESULT
+        // =============================================
+        function loadResult() {
+            fetch('/api/status')
+                .then(res => res.json())
+                .then(data => {
+                    // Update count with animation
+                    const countDisplay = document.getElementById('countDisplay');
+                    const count = data.count || 0;
+                    
+                    countDisplay.textContent = count;
+                    countDisplay.classList.remove('count-animate');
+                    void countDisplay.offsetWidth; // Trigger reflow
+                    countDisplay.classList.add('count-animate');
+                    
+                    // Update status
+                    document.getElementById('statusText').textContent = 'Selesai';
+                    document.getElementById('statusValue').textContent = 'Selesai';
+                    
+                    // Update time
+                    if (data.timestamp) {
+                        const time = new Date(data.timestamp);
+                        document.getElementById('statusTime').textContent = 
+                            time.toLocaleTimeString('id-ID');
+                        document.getElementById('detectionTime').textContent = 
+                            time.toLocaleTimeString('id-ID');
+                    }
+                    
+                    // Update process time
+                    if (data.detection_time) {
+                        document.getElementById('processTime').textContent = 
+                            data.detection_time.toFixed(2) + 's';
+                    } else {
+                        document.getElementById('processTime').textContent = '-';
+                    }
+                    
+                    // Update detail
+                    if (count > 0) {
+                        document.getElementById('countDetail').textContent = 
+                            `✨ ${count} obat berhasil terdeteksi`;
+                        document.getElementById('resultStatus').textContent = '✅ Berhasil';
+                        document.getElementById('resultStatus').className = 'value success';
+                    } else {
+                        document.getElementById('countDetail').textContent = 
+                            '⚠️ Tidak ada obat terdeteksi';
+                        document.getElementById('resultStatus').textContent = '⚠️ Tidak ada';
+                        document.getElementById('resultStatus').className = 'value';
+                    }
+                    
+                    // Store result image path for modal
+                    window.resultImagePath = data.result_image_path || null;
+                })
+                .catch(err => {
+                    console.error('Load result error:', err);
+                    document.getElementById('statusText').textContent = 'Error';
+                });
+        }
+
+        // =============================================
+        // MODAL / POPUP
+        // =============================================
+        function openModal() {
+            const modal = document.getElementById('imageModal');
+            const img = document.getElementById('modalImage');
+            const noImage = document.getElementById('modalNoImage');
+            
+            // Check if we have result image
+            const imagePath = window.resultImagePath;
+            
+            if (imagePath) {
+                // Show image
+                const timestamp = new Date().getTime();
+                img.src = `/image/${imagePath}?t=${timestamp}`;
+                img.style.display = 'block';
+                noImage.style.display = 'none';
+                
+                // Handle image load error
+                img.onerror = function() {
+                    this.style.display = 'none';
+                    noImage.style.display = 'block';
+                };
+            } else {
+                // No image available
+                img.style.display = 'none';
+                noImage.style.display = 'block';
+            }
+            
+            // Show modal
+            modal.classList.add('active');
+            document.body.style.overflow = 'hidden'; // Prevent scrolling
+        }
+
+        function closeModal() {
+            const modal = document.getElementById('imageModal');
+            modal.classList.remove('active');
+            document.body.style.overflow = ''; // Restore scrolling
+        }
+
+        // Close modal when clicking outside
+        document.getElementById('imageModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeModal();
+            }
+        });
+
+        // Close modal with Escape key
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                closeModal();
+            }
+        });
+
+        // =============================================
+        // INITIALIZATION
+        // =============================================
+        // Panggil di document ready
+        document.addEventListener('DOMContentLoaded', function() {
+            loadResult();
+            checkStatusAndRedirect(); // Cek status
+            setInterval(checkStatusAndRedirect, 10000); // Cek setiap 10 detik
+        });
+    </script>
+</body>
+</html>

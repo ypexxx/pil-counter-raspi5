@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistem Penghitung Obat - Home</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 25px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            max-width: 900px;
+            width: 100%;
+            animation: fadeIn 0.5s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.2); opacity: 0.7; }
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .header-icon {
+            font-size: 50px;
+            margin-bottom: 10px;
+        }
+
+        .header h1 {
+            font-size: 28px;
+            color: #333;
+            margin-bottom: 5px;
+        }
+
+        .header p {
+            color: #666;
+            font-size: 14px;
+        }
+
+        .status-bar {
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 15px 20px;
+            margin-bottom: 25px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .status-indicator {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .status-dot {
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+            background: #6c757d;
+            transition: all 0.3s ease;
+        }
+
+        .status-dot.idle { background: #6c757d; }
+        .status-dot.processing { 
+            background: #ffc107; 
+            animation: pulse 0.8s infinite;
+        }
+        .status-dot.done { background: #28a745; }
+        .status-dot.error { background: #dc3545; }
+
+        .status-text {
+            font-weight: 600;
+            color: #333;
+            font-size: 16px;
+        }
+
+        .status-time {
+            color: #999;
+            font-size: 13px;
+        }
+
+        .display-card {
+            background: #f8f9fa;
+            border-radius: 20px;
+            padding: 20px;
+            margin-bottom: 25px;
+            text-align: center;
+            min-height: 300px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+
+        .display-card img {
+            max-width: 100%;
+            max-height: 500px;
+            border-radius: 15px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .display-card .no-image {
+            color: #999;
+            font-size: 18px;
+        }
+
+        .display-card .no-image i {
+            font-size: 60px;
+            display: block;
+            margin-bottom: 15px;
+            color: #ddd;
+        }
+
+        .display-card .camera-status {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: rgba(0,0,0,0.7);
+            color: white;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+        }
+
+        .camera-status.online { background: rgba(40, 167, 69, 0.9); }
+        .camera-status.offline { background: rgba(220, 53, 69, 0.9); }
+
+        .button-group {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            flex: 1;
+            padding: 15px 25px;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            min-width: 140px;
+            text-decoration: none;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.5);
+        }
+
+        .btn-primary:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none !important;
+        }
+
+        /* Toast */
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: #333;
+            color: white;
+            padding: 15px 25px;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+            transform: translateX(120%);
+            transition: transform 0.3s ease;
+            z-index: 1000;
+            max-width: 400px;
+        }
+
+        .toast.show {
+            transform: translateX(0);
+        }
+
+        @media (max-width: 600px) {
+            .container { padding: 20px; }
+            .header h1 { font-size: 22px; }
+            .display-card { min-height: 200px; }
+            .display-card img { max-height: 300px; }
+            .btn { font-size: 14px; padding: 12px 18px; min-width: 100px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <div class="header-icon">💊</div>
+            <h1>Sistem Penghitung Obat Otomatis</h1>
+            <p>Dengan YOLOv8 &amp; Raspberry Pi 5</p>
+        </div>
+
+        <!-- Status Bar -->
+        <div class="status-bar">
+            <div class="status-indicator">
+                <div class="status-dot idle" id="statusDot"></div>
+                <span class="status-text" id="statusText">Siap</span>
+            </div>
+            <span class="status-time" id="statusTime">-</span>
+        </div>
+
+        <!-- Display Card -->
+        <div class="display-card" id="displayCard">
+            <div id="imageContainer" style="width: 100%;">
+                <img src="{{ url_for('video_feed') }}" 
+                     alt="Live Webcam Feed" 
+                     id="cameraImage" 
+                     style="width: 100%; max-height: 500px; border-radius: 15px; object-fit: contain;"
+                     onerror="handleCameraError()">
+                
+                <div class="no-image" id="placeholderImage" style="display: none;">
+                    <i>📷</i>
+                    <p>Koneksi kamera terputus</p>
+                    <p style="font-size: 14px; margin-top: 10px;">Pastikan kamera terhubung</p>
+                </div>
+            </div>
+            <div class="camera-status online" id="cameraStatus">● Online</div>
+        </div>
+
+        <!-- Buttons -->
+        <div class="button-group">
+            <button onclick="startDetection()" class="btn btn-primary" id="startBtn">
+                <i>▶</i> Mulai Deteksi
+            </button>
+        </div>
+    </div>
+
+    <!-- Toast -->
+    <div class="toast" id="toast"></div>
+
+    <script>
+        let statusCheckInterval = null;
+        let isProcessing = false;
+        let redirectTimeout = null;
+
+        // Show toast notification
+        function showToast(message, duration = 3000) {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.classList.add('show');
+            clearTimeout(toast._hideTimeout);
+            toast._hideTimeout = setTimeout(() => {
+                toast.classList.remove('show');
+            }, duration);
+        }
+
+        // Handle camera error
+        function handleCameraError() {
+            document.getElementById('cameraImage').style.display = 'none';
+            document.getElementById('placeholderImage').style.display = 'block';
+            document.getElementById('cameraStatus').textContent = '● Offline';
+            document.getElementById('cameraStatus').className = 'camera-status offline';
+            showToast('⚠️ Kamera tidak terdeteksi!', 5000);
+        }
+
+        // Update status from API
+        function updateStatus() {
+            fetch('/api/status')
+                .then(response => response.json())
+                .then(data => {
+                    const dot = document.getElementById('statusDot');
+                    const text = document.getElementById('statusText');
+                    const time = document.getElementById('statusTime');
+                    const startBtn = document.getElementById('startBtn');
+                    
+                    // Reset classes
+                    dot.className = 'status-dot';
+                    
+                    // Update based on status
+                    switch(data.status) {
+                        case 'idle':
+                            dot.classList.add('idle');
+                            text.textContent = 'Siap';
+                            startBtn.disabled = false;
+                            isProcessing = false;
+                            break;
+                            
+                        case 'processing':
+                            dot.classList.add('processing');
+                            text.textContent = 'Memproses...';
+                            startBtn.disabled = true;
+                            isProcessing = true;
+                            // Redirect ke halaman start
+                            if (!redirectTimeout) {
+                                redirectTimeout = setTimeout(() => {
+                                    window.location.href = '/start';
+                                }, 1000);
+                            }
+                            break;
+                            
+                        case 'done':
+                            dot.classList.add('done');
+                            text.textContent = 'Selesai ✓';
+                            startBtn.disabled = false;
+                            isProcessing = false;
+                            // Redirect ke result
+                            setTimeout(() => {
+                                window.location.href = '/result';
+                            }, 1500);
+                            break;
+                            
+                        case 'error':
+                            dot.classList.add('error');
+                            text.textContent = 'Error!';
+                            startBtn.disabled = false;
+                            isProcessing = false;
+                            showToast('❌ Terjadi error pada sistem!', 5000);
+                            break;
+                    }
+                    
+                    // Update time
+                    if (data.timestamp) {
+                        const date = new Date(data.timestamp);
+                        time.textContent = date.toLocaleTimeString('id-ID');
+                    }
+                })
+                .catch(err => {
+                    console.error('Status error:', err);
+                });
+        }
+
+        // Start detection
+        function startDetection() {
+            if (isProcessing) {
+                showToast('⏳ Sistem sedang memproses, harap tunggu!', 2000);
+                return;
+            }
+            
+            // Clear any pending redirect
+            if (redirectTimeout) {
+                clearTimeout(redirectTimeout);
+                redirectTimeout = null;
+            }
+            
+            document.getElementById('startBtn').disabled = true;
+            
+            fetch('/api/start', { method: 'POST' })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        showToast('🚀 Deteksi dimulai...', 2000);
+                    } else {
+                        showToast('❌ Gagal memulai deteksi', 3000);
+                        document.getElementById('startBtn').disabled = false;
+                    }
+                })
+                .catch(err => {
+                    console.error('Start error:', err);
+                    showToast('❌ Error: Gagal memulai deteksi', 3000);
+                    document.getElementById('startBtn').disabled = false;
+                });
+        }
+
+        // Initialize
+        function init() {
+            // Check camera periodically
+            setInterval(() => {
+                const img = document.getElementById('cameraImage');
+                if (img.complete && img.naturalWidth === 0) {
+                    handleCameraError();
+                }
+            }, 5000);
+            
+            // Start status checking
+            updateStatus();
+            statusCheckInterval = setInterval(updateStatus, 1000);
+        }
+
+        document.addEventListener('DOMContentLoaded', init);
+    </script>
+</body>
+</html>

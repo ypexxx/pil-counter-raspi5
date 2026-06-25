@@ -1,0 +1,588 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistem Penghitung Obat - Proses</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 25px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            max-width: 800px;
+            width: 100%;
+            animation: fadeIn 0.5s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.2); opacity: 0.7; }
+        }
+
+        .loader {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .header-icon {
+            font-size: 50px;
+            margin-bottom: 10px;
+        }
+
+        .header h1 {
+            font-size: 28px;
+            color: #333;
+            margin-bottom: 5px;
+        }
+
+        .header p {
+            color: #666;
+            font-size: 14px;
+        }
+
+        .status-bar {
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 15px 20px;
+            margin-bottom: 25px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .status-indicator {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .status-dot {
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+            background: #ffc107;
+            animation: pulse 0.8s infinite;
+        }
+
+        .status-dot.done {
+            background: #28a745;
+            animation: none;
+        }
+
+        .status-dot.error {
+            background: #dc3545;
+            animation: pulse 0.5s infinite;
+        }
+
+        .status-text {
+            font-weight: 600;
+            color: #333;
+            font-size: 16px;
+        }
+
+        .status-time {
+            color: #999;
+            font-size: 13px;
+        }
+
+        .progress-container {
+            width: 100%;
+            background: #f8f9fa;
+            border-radius: 10px;
+            margin-bottom: 25px;
+            overflow: hidden;
+            height: 8px;
+        }
+
+        .progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, #667eea, #764ba2);
+            width: 0%;
+            transition: width 0.5s ease;
+            border-radius: 10px;
+        }
+
+        .image-container {
+            background: #f8f9fa;
+            border-radius: 20px;
+            padding: 20px;
+            margin-bottom: 25px;
+            text-align: center;
+            min-height: 400px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .image-container .label {
+            font-size: 14px;
+            font-weight: 600;
+            color: #666;
+            margin-bottom: 15px;
+        }
+
+        .image-container img {
+            max-width: 100%;
+            max-height: 450px;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            object-fit: contain;
+            width: 100%;
+        }
+
+        .loading-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(255, 255, 255, 0.95);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            border-radius: 20px;
+            z-index: 10;
+            transition: opacity 0.5s ease;
+        }
+
+        .loading-overlay.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .loading-overlay .loader {
+            margin: 0 auto 20px auto;
+        }
+
+        .loading-overlay .loading-text {
+            color: #666;
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        .loading-overlay .loading-sub {
+            color: #999;
+            font-size: 14px;
+            margin-top: 8px;
+        }
+
+        .timeout-warning {
+            display: none;
+            background: #fff3cd;
+            border: 1px solid #ffc107;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 25px;
+            text-align: center;
+            color: #856404;
+        }
+
+        .timeout-warning.active {
+            display: block;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            flex: 1;
+            padding: 15px 25px;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            min-width: 140px;
+            text-decoration: none;
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #5a6268;
+            transform: translateY(-2px);
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.5);
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none !important;
+        }
+
+        /* Toast */
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: #333;
+            color: white;
+            padding: 15px 25px;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+            transform: translateX(120%);
+            transition: transform 0.3s ease;
+            z-index: 1000;
+        }
+
+        .toast.show {
+            transform: translateX(0);
+        }
+
+        @media (max-width: 768px) {
+            .container { padding: 20px; }
+            .header h1 { font-size: 22px; }
+            .image-container { min-height: 250px; }
+            .image-container img { max-height: 300px; }
+            .btn { font-size: 14px; padding: 12px 18px; min-width: 100px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <div class="header-icon">⚙️</div>
+            <h1>Memproses Deteksi</h1>
+            <p>Mohon tunggu, sistem sedang menganalisis gambar</p>
+        </div>
+
+        <!-- Status Bar -->
+        <div class="status-bar">
+            <div class="status-indicator">
+                <div class="status-dot" id="statusDot"></div>
+                <span class="status-text" id="statusText">Memulai...</span>
+            </div>
+            <span class="status-time" id="statusTime">-</span>
+        </div>
+
+        <!-- Progress Bar -->
+        <div class="progress-container">
+            <div class="progress-bar" id="progressBar"></div>
+        </div>
+
+        <!-- Timeout Warning -->
+        <div class="timeout-warning" id="timeoutWarning">
+            ⏱️ Deteksi memakan waktu lebih lama dari biasanya. 
+            <br>Pastikan kamera dan model berfungsi dengan baik.
+        </div>
+
+        <!-- Image Container -->
+        <div class="image-container" id="imageContainer">
+            <div class="label">📷 Gambar yang Diambil</div>
+            
+            <!-- Loading Overlay -->
+            <div class="loading-overlay" id="loadingOverlay">
+                <div class="loader"></div>
+                <div class="loading-text" id="loadingText">🔍 Menganalisis gambar...</div>
+                <div class="loading-sub" id="loadingSub">Deteksi objek dengan YOLOv8</div>
+            </div>
+
+            <!-- Image Display -->
+            <div id="imageDisplay" style="width: 100%;">
+                <img src="" 
+                     alt="Captured Image"
+                     id="capturedImage"
+                     style="display: none; max-width: 100%; max-height: 450px; border-radius: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); object-fit: contain; width: 100%;"
+                     onerror="this.style.display='none'; document.getElementById('placeholderImage').style.display='block';">
+                <div class="placeholder" id="placeholderImage" style="color: #999; padding: 40px;">
+                    <i style="font-size: 60px; display: block; margin-bottom: 15px; color: #ddd;">📷</i>
+                    <p>Menunggu gambar...</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Buttons -->
+        <div class="button-group">
+            <button class="btn btn-secondary" onclick="goHome()">
+                ← Kembali
+            </button>
+            <button class="btn btn-primary" id="refreshBtn" onclick="manualCheck()">
+                🔄 Refresh
+            </button>
+        </div>
+    </div>
+
+    <!-- Toast -->
+    <div class="toast" id="toast"></div>
+
+    <script>
+        let autoCheckInterval = null;
+        let isCompleted = false;
+        let progressValue = 0;
+        let checkCount = 0;
+        const MAX_CHECKS = 45; // 45 * 2 detik = 90 detik timeout
+
+        function showToast(message, duration = 3000) {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.classList.add('show');
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, duration);
+        }
+
+        function goHome() {
+            if (!isCompleted) {
+                if (!confirm('⚠️ Proses masih berjalan. Yakin ingin kembali?')) {
+                    return;
+                }
+            }
+            if (autoCheckInterval) {
+                clearInterval(autoCheckInterval);
+            }
+            window.location.href = '/';
+        }
+
+        function updateProgress(step, status) {
+            const progressMap = {
+                1: 25,
+                2: 50,
+                3: 75,
+                4: 100
+            };
+            
+            if (status === 'done') {
+                progressValue = 100;
+            } else if (status === 'processing') {
+                progressValue = Math.min(progressValue + 5, 90);
+            } else {
+                progressValue = progressMap[step] || 25;
+            }
+            
+            document.getElementById('progressBar').style.width = progressValue + '%';
+        }
+
+        function updateLoadingText(step) {
+            const textEl = document.getElementById('loadingText');
+            const subEl = document.getElementById('loadingSub');
+            
+            switch(step) {
+                case 1:
+                    textEl.textContent = '📸 Mengambil gambar dari kamera...';
+                    subEl.textContent = 'Pastikan obat terlihat jelas';
+                    break;
+                case 2:
+                    textEl.textContent = '🔍 Menganalisis gambar dengan YOLOv8...';
+                    subEl.textContent = 'Deteksi objek obat dalam gambar';
+                    break;
+                case 3:
+                    textEl.textContent = '🧮 Menghitung jumlah obat...';
+                    subEl.textContent = 'Mengidentifikasi setiap objek';
+                    break;
+                case 4:
+                    textEl.textContent = '✅ Selesai!';
+                    subEl.textContent = 'Hasil deteksi siap ditampilkan';
+                    break;
+                default:
+                    textEl.textContent = '🔍 Menganalisis gambar...';
+                    subEl.textContent = 'Deteksi objek dengan YOLOv8';
+            }
+        }
+
+        function checkStatus() {
+            fetch('/api/status')
+                .then(res => res.json())
+                .then(data => {
+                    const statusText = document.getElementById('statusText');
+                    const statusTime = document.getElementById('statusTime');
+                    const statusDot = document.getElementById('statusDot');
+                    const loadingOverlay = document.getElementById('loadingOverlay');
+                    const img = document.getElementById('capturedImage');
+                    const placeholder = document.getElementById('placeholderImage');
+                    const timeoutWarning = document.getElementById('timeoutWarning');
+                    
+                    // Update time
+                    if (data.timestamp) {
+                        const time = new Date(data.timestamp);
+                        statusTime.textContent = time.toLocaleTimeString('id-ID');
+                    }
+                    
+                    switch(data.status) {
+                        case 'processing':
+                            statusText.textContent = 'Memproses...';
+                            statusDot.className = 'status-dot';
+                            loadingOverlay.classList.remove('hidden');
+                            updateProgress(2, 'processing');
+                            updateLoadingText(2);
+                            
+                            // Show captured image if available
+                            if (data.image_path) {
+                                const timestamp = new Date().getTime();
+                                img.src = `/image/${data.image_path}?t=${timestamp}`;
+                                img.style.display = 'block';
+                                placeholder.style.display = 'none';
+                            }
+                            
+                            // Show timeout warning after 30 seconds
+                            if (checkCount > 15) {
+                                timeoutWarning.classList.add('active');
+                            }
+                            break;
+                            
+                        case 'done':
+                            statusText.textContent = 'Selesai ✅';
+                            statusDot.className = 'status-dot done';
+                            loadingOverlay.classList.add('hidden');
+                            updateProgress(4, 'done');
+                            updateLoadingText(4);
+                            timeoutWarning.classList.remove('active');
+                            
+                            // Show result image
+                            if (data.result_image_path) {
+                                const timestamp = new Date().getTime();
+                                img.src = `/image/${data.result_image_path}?t=${timestamp}`;
+                                img.style.display = 'block';
+                                placeholder.style.display = 'none';
+                            }
+                            
+                            isCompleted = true;
+                            if (autoCheckInterval) {
+                                clearInterval(autoCheckInterval);
+                            }
+                            
+                            // Redirect to result page after 2 seconds
+                            setTimeout(() => {
+                                window.location.href = '/result';
+                            }, 2000);
+                            break;
+                            
+                        case 'error':
+                            statusText.textContent = 'Error - Silakan coba lagi';
+                            statusDot.className = 'status-dot error';
+                            loadingOverlay.classList.add('hidden');
+                            updateProgress(1, 'error');
+                            timeoutWarning.classList.remove('active');
+                            showToast('❌ Terjadi error pada sistem!', 5000);
+                            break;
+                            
+                        case 'idle':
+                            statusText.textContent = 'Siap';
+                            statusDot.className = 'status-dot';
+                            loadingOverlay.classList.add('hidden');
+                            updateProgress(1, 'idle');
+                            timeoutWarning.classList.remove('active');
+                            // Redirect to home if idle
+                            setTimeout(() => {
+                                window.location.href = '/';
+                            }, 2000);
+                            break;
+                    }
+                })
+                .catch(err => {
+                    console.error('Status error:', err);
+                    showToast('❌ Gagal menghubungi server', 3000);
+                });
+        }
+
+        function manualCheck() {
+            if (isCompleted) {
+                window.location.href = '/result';
+                return;
+            }
+            showToast('🔍 Memeriksa status...', 1500);
+            checkStatus();
+        }
+
+        // Initialize
+        function init() {
+            // Start auto-check
+            autoCheckInterval = setInterval(() => {
+                checkCount++;
+                checkStatus();
+                
+                // Timeout after max checks
+                if (checkCount >= MAX_CHECKS) {
+                    clearInterval(autoCheckInterval);
+                    showToast('⏱️ Deteksi timeout! Kembali ke home...', 5000);
+                    setTimeout(() => {
+                        window.location.href = '/';
+                    }, 3000);
+                }
+            }, 2000);
+            
+            // Initial check
+            setTimeout(checkStatus, 500);
+            
+            // Load initial image if exists
+            fetch('/api/status')
+                .then(res => res.json())
+                .then(data => {
+                    if (data.image_path) {
+                        const img = document.getElementById('capturedImage');
+                        const timestamp = new Date().getTime();
+                        img.src = `/image/${data.image_path}?t=${timestamp}`;
+                        img.style.display = 'block';
+                        document.getElementById('placeholderImage').style.display = 'none';
+                    }
+                });
+        }
+
+        document.addEventListener('DOMContentLoaded', init);
+    </script>
+</body>
+</html>

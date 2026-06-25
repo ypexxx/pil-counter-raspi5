@@ -1,0 +1,17 @@
+# Mengabaikan folder Virtual Environment bawaan Python
+venv/
+.venv/
+env/
+
+# Mengabaikan folder cache Python
+__pycache__/
+*.pyc
+
+# Mengabaikan folder konfigurasi IDE (seperti VS Code atau PyCharm)
+.vscode/
+.idea/
+
+# Mengabaikan file log atau file sistem
+*.log
+.DS_Store
+Thumbs.db
