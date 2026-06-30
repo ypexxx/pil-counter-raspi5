@@ -26,7 +26,7 @@ def load_model():
             raise
     return _model
 
-def count_pills(image_path, conf_threshold=0.5, iou_threshold=0.45):
+def count_pills(image_path, conf_threshold=0.8, iou_threshold=0.45):
     """
     Detect and count pills using YOLOv8
     
@@ -95,7 +95,7 @@ def get_detection_details(image_path):
         if not os.path.exists(image_path):
             return None
         
-        results = model(image_path, conf=0.5, iou=0.45, verbose=False)
+        results = model(image_path, conf=0.8, iou=0.45, verbose=False)
         
         detections = []
         if results and len(results) > 0:

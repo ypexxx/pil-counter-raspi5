@@ -23,11 +23,6 @@ def run_pipeline():
         logger.info("=" * 50)
         logger.info("STARTING DETECTION PIPELINE")
         logger.info("=" * 50)
-        
-        # 1. Nyalakan LED
-        logger.info("1. Turning LED ON...")
-        led_on()
-        time.sleep(0.3)
 
         # 2. Nyalakan vibrator
         vibrator_on()

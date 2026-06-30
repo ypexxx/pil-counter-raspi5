@@ -1,6 +1,6 @@
 from flask import Flask, render_template, jsonify, request, send_file
 from utils.pipeline import run_pipeline
-from hardware.gpio_control import wait_button_press, cleanup_gpio
+from hardware.gpio_control import wait_button_press, cleanup_gpio, led_on, led_off, led_atas_on, led_atas_off
 import threading
 import logging
 import time
@@ -21,6 +21,11 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 app = Flask(__name__)
+
+# Nyalakan Led
+logger.info("1. Turning LED ON...")
+led_on()
+led_atas_on()
 
 # ============================================
 # Global State

@@ -1,5 +1,5 @@
 from gpiozero import Button, LED, OutputDevice
-from config import BUTTON_PIN, LED_PIN, VIBRATOR_PIN
+from config import BUTTON_PIN, LED_PIN, LED_ATAS_PIN, VIBRATOR_PIN
 import time
 import logging
 
@@ -7,8 +7,9 @@ logger = logging.getLogger(__name__)
 
 # Inisialisasi hardware
 button = Button(BUTTON_PIN, pull_up=True)
-led = LED(LED_PIN)
-vibrator = OutputDevice(VIBRATOR_PIN)
+led = OutputDevice(LED_PIN, active_high=False, initial_value=False)
+led_atas = OutputDevice(LED_ATAS_PIN, active_high=False, initial_value=False)
+vibrator = OutputDevice(VIBRATOR_PIN, active_high=False, initial_value=False)
 
 def led_on():
     """Turn LED on"""
@@ -25,6 +26,22 @@ def led_off():
         logger.debug("LED OFF")
     except Exception as e:
         logger.error(f"LED off error: {e}")
+
+def led_atas_on():
+    """Turn upper LED on"""
+    try:
+        led_atas.on()
+        logger.debug("UpperLED ON")
+    except Exception as e:
+        logger.error(f"Upper LED on error: {e}")
+
+def led_atas_off():
+    """Upper LED off"""
+    try:
+        led_atas.off()
+        logger.debug("Upper LED OFF")
+    except Exception as e:
+        logger.error(f"Upper LED off error: {e}")
 
 def vibrator_on():
     """Turn vibrator on"""
@@ -84,7 +101,7 @@ def button_is_pressed():
 def cleanup_gpio():
     """Clean up GPIO resources"""
     try:
-        led.off()
+        # led.off()
         vibrator.off()
         logger.info("GPIO cleaned up")
     except Exception as e:
