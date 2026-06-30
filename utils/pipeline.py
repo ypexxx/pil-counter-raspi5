@@ -1,6 +1,6 @@
 import time
 import logging
-from hardware.gpio_control import led_on, led_off, vibrator_on, vibrator_off
+from hardware.gpio_control import led_on, led_off, led_atas_off, vibrator_on, vibrator_off
 from vision.camera import capture_image
 from vision.detector import count_pills
 from config import IMAGE_PATH
@@ -49,10 +49,6 @@ def run_pipeline():
         logger.info(f"Detection completed in {detection_time:.2f}s")
         logger.info(f"Count: {count} pills detected")
         
-        # 5. Matikan LED
-        logger.info("5. Turning LED OFF...")
-        led_off()
-        
         logger.info("=" * 50)
         logger.info(f"PIPELINE COMPLETED: {count} pills found")
         logger.info("=" * 50)
@@ -64,6 +60,7 @@ def run_pipeline():
         # Clean up hardware
         try:
             led_off()
+            led_atas_off()
             vibrator_off()
         except:
             pass

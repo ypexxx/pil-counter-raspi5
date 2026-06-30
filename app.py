@@ -192,8 +192,9 @@ def process_detection():
         )
         # Clean up hardware
         try:
-            from hardware.gpio_control import led_off, vibrator_off
+            from hardware.gpio_control import led_off, led_atas_off, vibrator_off
             led_off()
+            led_atas_off()
             vibrator_off()
         except:
             pass
@@ -226,7 +227,7 @@ def generate_video_stream():
         camera.set(cv2.CAP_PROP_FRAME_HEIGHT, 480)
         camera.set(cv2.CAP_PROP_FPS, 30)
         
-        TARGET_FPS = 1
+        TARGET_FPS = 10
         INTERVAL = 1.0 / TARGET_FPS
         frame_skip = 0
         
